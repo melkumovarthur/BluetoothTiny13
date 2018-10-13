@@ -1,0 +1,324 @@
+
+BluetoothTiny13.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000172  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000001e6  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000004  00800060  00800060  000001e6  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  000001e6  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000218  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000038  00000000  00000000  00000254  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   0000057f  00000000  00000000  0000028c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 000003ed  00000000  00000000  0000080b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   000002b7  00000000  00000000  00000bf8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  00000074  00000000  00000000  00000eb0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    000002df  00000000  00000000  00000f24  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000212  00000000  00000000  00001203  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000028  00000000  00000000  00001415  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	09 c0       	rjmp	.+18     	; 0x14 <__ctors_end>
+   2:	17 c0       	rjmp	.+46     	; 0x32 <__vector_1>
+   4:	15 c0       	rjmp	.+42     	; 0x30 <__bad_interrupt>
+   6:	14 c0       	rjmp	.+40     	; 0x30 <__bad_interrupt>
+   8:	13 c0       	rjmp	.+38     	; 0x30 <__bad_interrupt>
+   a:	12 c0       	rjmp	.+36     	; 0x30 <__bad_interrupt>
+   c:	21 c0       	rjmp	.+66     	; 0x50 <__vector_6>
+   e:	10 c0       	rjmp	.+32     	; 0x30 <__bad_interrupt>
+  10:	0f c0       	rjmp	.+30     	; 0x30 <__bad_interrupt>
+  12:	0e c0       	rjmp	.+28     	; 0x30 <__bad_interrupt>
+
+00000014 <__ctors_end>:
+  14:	11 24       	eor	r1, r1
+  16:	1f be       	out	0x3f, r1	; 63
+  18:	cf e9       	ldi	r28, 0x9F	; 159
+  1a:	cd bf       	out	0x3d, r28	; 61
+
+0000001c <__do_clear_bss>:
+  1c:	20 e0       	ldi	r18, 0x00	; 0
+  1e:	a0 e6       	ldi	r26, 0x60	; 96
+  20:	b0 e0       	ldi	r27, 0x00	; 0
+  22:	01 c0       	rjmp	.+2      	; 0x26 <.do_clear_bss_start>
+
+00000024 <.do_clear_bss_loop>:
+  24:	1d 92       	st	X+, r1
+
+00000026 <.do_clear_bss_start>:
+  26:	a4 36       	cpi	r26, 0x64	; 100
+  28:	b2 07       	cpc	r27, r18
+  2a:	e1 f7       	brne	.-8      	; 0x24 <.do_clear_bss_loop>
+  2c:	5f d0       	rcall	.+190    	; 0xec <main>
+  2e:	9f c0       	rjmp	.+318    	; 0x16e <_exit>
+
+00000030 <__bad_interrupt>:
+  30:	e7 cf       	rjmp	.-50     	; 0x0 <__vectors>
+
+00000032 <__vector_1>:
+volatile uint8_t rec;
+volatile uint8_t usart_r;
+volatile uint8_t coef;
+
+ISR(INT0_vect)
+{rec=1;} // Прерывание чисто для определения стартового бита при приеме,
+  32:	1f 92       	push	r1
+  34:	0f 92       	push	r0
+  36:	0f b6       	in	r0, 0x3f	; 63
+  38:	0f 92       	push	r0
+  3a:	11 24       	eor	r1, r1
+  3c:	8f 93       	push	r24
+  3e:	81 e0       	ldi	r24, 0x01	; 1
+  40:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <rec>
+  44:	8f 91       	pop	r24
+  46:	0f 90       	pop	r0
+  48:	0f be       	out	0x3f, r0	; 63
+  4a:	0f 90       	pop	r0
+  4c:	1f 90       	pop	r1
+  4e:	18 95       	reti
+
+00000050 <__vector_6>:
+
+//------------------------------------------------------------------------
+// Единственный Таймер, используется для формирования четких промежуток
+ // между битами, как при приеме так и при передачи
+ISR(TIM0_COMPA_vect)//Прерывание по совпадению с числом регистра COMPA
+{	asm("cli");
+  50:	1f 92       	push	r1
+  52:	0f 92       	push	r0
+  54:	0f b6       	in	r0, 0x3f	; 63
+  56:	0f 92       	push	r0
+  58:	11 24       	eor	r1, r1
+  5a:	8f 93       	push	r24
+  5c:	f8 94       	cli
+	TIMSK0=0x00;//отключить прерывание по совпадению с OCR0A
+  5e:	19 be       	out	0x39, r1	; 57
+	TCCR0B=0x00;  //отключить таймер
+  60:	13 be       	out	0x33, r1	; 51
+	OCR0A=0; //число сравнения с счетчиком = 0      
+  62:	16 be       	out	0x36, r1	; 54
+	TCNT0=0;//таймер начинает отсчет от 0
+  64:	12 be       	out	0x32, r1	; 50
+	TIMSK0|=(1<<OCIE0A); // включить прерывание по совпадению с OCR0A
+  66:	89 b7       	in	r24, 0x39	; 57
+  68:	84 60       	ori	r24, 0x04	; 4
+  6a:	89 bf       	out	0x39, r24	; 57
+	// Значение "сброс при совпадении" загружается каждый раз из переменной
+	OCR0A=62;      // Можно быстро менять скорости UART
+  6c:	8e e3       	ldi	r24, 0x3E	; 62
+  6e:	86 bf       	out	0x36, r24	; 54
+	TCCR0A|=(1<<WGM01);
+  70:	8f b5       	in	r24, 0x2f	; 47
+  72:	82 60       	ori	r24, 0x02	; 2
+  74:	8f bd       	out	0x2f, r24	; 47
+	TCCR0B=0x01;// частота таймера = частота микроконтроллера
+  76:	81 e0       	ldi	r24, 0x01	; 1
+  78:	83 bf       	out	0x33, r24	; 51
+	Rece_bit=1;
+  7a:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+}
+  7e:	8f 91       	pop	r24
+  80:	0f 90       	pop	r0
+  82:	0f be       	out	0x3f, r0	; 63
+  84:	0f 90       	pop	r0
+  86:	1f 90       	pop	r1
+  88:	18 95       	reti
+
+0000008a <UART_receiv>:
+int UART_receiv(void)
+{
+	uint8_t a;
+	usart_r=0;
+  8a:	10 92 61 00 	sts	0x0061, r1	; 0x800061 <usart_r>
+	MCUCR=0x02; // INT0 Interrupt. Падающий фронт на пине INT0 генерирует запрос прерывания
+  8e:	82 e0       	ldi	r24, 0x02	; 2
+  90:	85 bf       	out	0x35, r24	; 53
+	GIMSK=0x40; // INT0 Interrupt. Внешнее прерывание INT0 включено
+  92:	80 e4       	ldi	r24, 0x40	; 64
+  94:	8b bf       	out	0x3b, r24	; 59
+	while(rec==0); // Ждать, пока не случится стартовый бит
+  96:	80 91 63 00 	lds	r24, 0x0063	; 0x800063 <rec>
+  9a:	88 23       	and	r24, r24
+  9c:	e1 f3       	breq	.-8      	; 0x96 <UART_receiv+0xc>
+	MCUCR=0; // INT0 Interrupt. Низкий уровень на пине INT0 генерирует запрос прерывания
+  9e:	15 be       	out	0x35, r1	; 53
+	GIMSK=0; // INT0 Interrupt. Все источники внешних прерываний отключены
+  a0:	1b be       	out	0x3b, r1	; 59
+	coef=61;//запись числа в переменную для регистра сравнения OCR0A
+  a2:	8d e3       	ldi	r24, 0x3D	; 61
+  a4:	80 93 62 00 	sts	0x0062, r24	; 0x800062 <coef>
+	//(хотя лучше бы подошло число 62,5(значение считывалось бы ровно на половине импульса)
+	TCNT0=0x00; //задаем начальное число, с которого начнет счет таймер - 0
+  a8:	12 be       	out	0x32, r1	; 50
+	//Когда таймер работает, по каждому импульсу тактового сигнала значение TCNT0 изменяется на единицу.
+	TIMSK0|=(1<<OCIE0A);//разрешение прерывания по совпадению с числом регистра OCR0A
+  aa:	89 b7       	in	r24, 0x39	; 57
+  ac:	84 60       	ori	r24, 0x04	; 4
+  ae:	89 bf       	out	0x39, r24	; 57
+	OCR0A=62;
+  b0:	8e e3       	ldi	r24, 0x3E	; 62
+  b2:	86 bf       	out	0x36, r24	; 54
+	TCCR0B=0x01;//частота таймера = частота микроконтроллера
+  b4:	81 e0       	ldi	r24, 0x01	; 1
+  b6:	83 bf       	out	0x33, r24	; 51
+	rec=0;//обнуление флага появления стартового бита
+  b8:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <rec>
+  bc:	99 e0       	ldi	r25, 0x09	; 9
+	for(a=0; a<9; a++)//запись в переменную usart_r данных принятых по UART
+	{
+		while(Rece_bit==0);//ждем пока не получим следующий бит (пока таймер не отсчитает 62 цикла)
+  be:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
+  c2:	88 23       	and	r24, r24
+  c4:	e1 f3       	breq	.-8      	; 0xbe <__stack+0x1f>
+		if(PINB|(1<<1))// если на 1 пине присутствует положительный потенциал - 	
+  c6:	86 b3       	in	r24, 0x16	; 22
+		{usart_r|=(1<<7);}//то записать единицу в 7 бит переменной usart_r 
+  c8:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <usart_r>
+  cc:	80 68       	ori	r24, 0x80	; 128
+  ce:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <usart_r>
+		else {usart_r &=~(1<<7);} // а если 0, то записать в тот же бит ноль
+		usart_r=usart_r>>1;
+  d2:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <usart_r>
+  d6:	86 95       	lsr	r24
+  d8:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <usart_r>
+		Rece_bit=0;
+  dc:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <_edata>
+  e0:	91 50       	subi	r25, 0x01	; 1
+	//Когда таймер работает, по каждому импульсу тактового сигнала значение TCNT0 изменяется на единицу.
+	TIMSK0|=(1<<OCIE0A);//разрешение прерывания по совпадению с числом регистра OCR0A
+	OCR0A=62;
+	TCCR0B=0x01;//частота таймера = частота микроконтроллера
+	rec=0;//обнуление флага появления стартового бита
+	for(a=0; a<9; a++)//запись в переменную usart_r данных принятых по UART
+  e2:	69 f7       	brne	.-38     	; 0xbe <__stack+0x1f>
+		{usart_r|=(1<<7);}//то записать единицу в 7 бит переменной usart_r 
+		else {usart_r &=~(1<<7);} // а если 0, то записать в тот же бит ноль
+		usart_r=usart_r>>1;
+		Rece_bit=0;
+	}
+	return usart_r;
+  e4:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <usart_r>
+	
+}
+  e8:	90 e0       	ldi	r25, 0x00	; 0
+  ea:	08 95       	ret
+
+000000ec <main>:
+
+int main(void)
+{
+	DDRB&=~(1<<1); //хххх ххх0
+  ec:	b9 98       	cbi	0x17, 1	; 23
+	DDRB|=(1<<0); //хххх хх10
+  ee:	b8 9a       	sbi	0x17, 0	; 23
+	DDRB|=(1<<2);
+  f0:	ba 9a       	sbi	0x17, 2	; 23
+	PORTB&=~(1<<1);
+  f2:	c1 98       	cbi	0x18, 1	; 24
+	PORTB|=(1<<0);
+  f4:	c0 9a       	sbi	0x18, 0	; 24
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  f6:	2f eb       	ldi	r18, 0xBF	; 191
+  f8:	84 ed       	ldi	r24, 0xD4	; 212
+  fa:	91 e0       	ldi	r25, 0x01	; 1
+  fc:	21 50       	subi	r18, 0x01	; 1
+  fe:	80 40       	sbci	r24, 0x00	; 0
+ 100:	90 40       	sbci	r25, 0x00	; 0
+ 102:	e1 f7       	brne	.-8      	; 0xfc <main+0x10>
+ 104:	00 c0       	rjmp	.+0      	; 0x106 <main+0x1a>
+ 106:	00 00       	nop
+	_delay_ms(500);
+	PORTB&=~(1<<0);
+ 108:	c0 98       	cbi	0x18, 0	; 24
+ 10a:	2f eb       	ldi	r18, 0xBF	; 191
+ 10c:	84 ed       	ldi	r24, 0xD4	; 212
+ 10e:	91 e0       	ldi	r25, 0x01	; 1
+ 110:	21 50       	subi	r18, 0x01	; 1
+ 112:	80 40       	sbci	r24, 0x00	; 0
+ 114:	90 40       	sbci	r25, 0x00	; 0
+ 116:	e1 f7       	brne	.-8      	; 0x110 <main+0x24>
+ 118:	00 c0       	rjmp	.+0      	; 0x11a <main+0x2e>
+ 11a:	00 00       	nop
+	_delay_ms(500);
+	PORTB|=(1<<0);
+ 11c:	c0 9a       	sbi	0x18, 0	; 24
+ 11e:	2f eb       	ldi	r18, 0xBF	; 191
+ 120:	84 ed       	ldi	r24, 0xD4	; 212
+ 122:	91 e0       	ldi	r25, 0x01	; 1
+ 124:	21 50       	subi	r18, 0x01	; 1
+ 126:	80 40       	sbci	r24, 0x00	; 0
+ 128:	90 40       	sbci	r25, 0x00	; 0
+ 12a:	e1 f7       	brne	.-8      	; 0x124 <main+0x38>
+ 12c:	00 c0       	rjmp	.+0      	; 0x12e <main+0x42>
+ 12e:	00 00       	nop
+	_delay_ms(500);
+	PORTB&=~(1<<0);
+ 130:	c0 98       	cbi	0x18, 0	; 24
+	asm("sei"); //разрешение прерываний
+ 132:	78 94       	sei
+	while(1)
+	{	UART_receiv();
+ 134:	aa df       	rcall	.-172    	; 0x8a <UART_receiv>
+		if(usart_r<=0x31)
+ 136:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <usart_r>
+ 13a:	82 33       	cpi	r24, 0x32	; 50
+ 13c:	60 f4       	brcc	.+24     	; 0x156 <main+0x6a>
+		{
+		PORTB|=(1<<2);
+ 13e:	c2 9a       	sbi	0x18, 2	; 24
+ 140:	2f eb       	ldi	r18, 0xBF	; 191
+ 142:	84 ed       	ldi	r24, 0xD4	; 212
+ 144:	91 e0       	ldi	r25, 0x01	; 1
+ 146:	21 50       	subi	r18, 0x01	; 1
+ 148:	80 40       	sbci	r24, 0x00	; 0
+ 14a:	90 40       	sbci	r25, 0x00	; 0
+ 14c:	e1 f7       	brne	.-8      	; 0x146 <main+0x5a>
+ 14e:	00 c0       	rjmp	.+0      	; 0x150 <main+0x64>
+ 150:	00 00       	nop
+		_delay_ms(500);
+		PORTB&=~(1<<2);
+ 152:	c2 98       	cbi	0x18, 2	; 24
+ 154:	ef cf       	rjmp	.-34     	; 0x134 <main+0x48>
+		}//если прислали единичку, то просто засветится светодиод
+		else
+		{
+		PORTB|=(1<<0);
+ 156:	c0 9a       	sbi	0x18, 0	; 24
+ 158:	2f eb       	ldi	r18, 0xBF	; 191
+ 15a:	84 ed       	ldi	r24, 0xD4	; 212
+ 15c:	91 e0       	ldi	r25, 0x01	; 1
+ 15e:	21 50       	subi	r18, 0x01	; 1
+ 160:	80 40       	sbci	r24, 0x00	; 0
+ 162:	90 40       	sbci	r25, 0x00	; 0
+ 164:	e1 f7       	brne	.-8      	; 0x15e <main+0x72>
+ 166:	00 c0       	rjmp	.+0      	; 0x168 <main+0x7c>
+ 168:	00 00       	nop
+		_delay_ms(500);
+		PORTB&=~(1<<0);
+ 16a:	c0 98       	cbi	0x18, 0	; 24
+ 16c:	e3 cf       	rjmp	.-58     	; 0x134 <main+0x48>
+
+0000016e <_exit>:
+ 16e:	f8 94       	cli
+
+00000170 <__stop_program>:
+ 170:	ff cf       	rjmp	.-2      	; 0x170 <__stop_program>
